@@ -92,7 +92,13 @@ end
 
 -- How many blocks left. That text on the top-right
 function drawLeftBlocks(nick)
-	ui.addTextArea(0, "Objects left: "..players[nick].leftBlocks, nick, 680, 35, 200, 50, 0, 0, 0, true)
+	local numberOfBlocks = players[nick].leftBlocks
+
+	if players[nick].infiniteBlocks then
+		numberOfBlocks = "inf"
+	end
+
+	ui.addTextArea(0, "Objects left: "..numberOfBlocks, nick, 680, 35, 200, 50, 0, 0, 0, true)
 end
 
 -- How many blocks each player has
@@ -176,6 +182,10 @@ function startLobby()
 
 	for nick, player in pairs(players) do
 		player.infiniteBlocks = true
+	end
+
+	for nick in pairs(tfm.get.room.playerList) do
+		drawLeftBlocks(nick)
 	end
 end
 
