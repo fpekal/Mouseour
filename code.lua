@@ -52,8 +52,6 @@ function calcNextLevelVote()
 	local percentage = votedNum / playerNum
 
 
-	print(percentage)
-
 	if percentage >= 0.5 then
 		startGame()
 	end
