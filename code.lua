@@ -15,7 +15,7 @@ local maps = {
 	"@7912229"
 }
 
-local gameTime = 150
+local gameTime = 60
 local startBlocks = 50
 
 
@@ -28,12 +28,58 @@ tfm.exec.disableAfkDeath(true)
 
 local players = {}
 
+local module = {
+	nextLevelBtnVisible = false,
+	inLobby = false
+}
+
 ----------------------
+
+function calcNextLevelVote()
+	local playerNum = 0
+
+	local votedNum = 0
+
+	for nick, player in pairs(players) do
+		playerNum = playerNum + 1
+
+		if player.nextLevelVoted == true then
+			votedNum = votedNum + 1
+		end
+	end
+
+
+	local percentage = votedNum / playerNum
+
+
+	print(percentage)
+
+	if percentage >= 0.5 then
+		startGame()
+	end
+end
+
+function condShowNextLevelBtn(nick)
+	if module.nextLevelBtnVisible then
+		local color = 0x222222
+
+		if players[nick].nextLevelVoted then
+			color = 0x225522
+		end
+
+		ui.addTextArea(3,"<a href='event:nextLevel'><font color='#FFFF00'><p align='center'>Vote next level</p></font></a>", nick, 695, 380, 100, 20, color, 0x333333, 0.8, true)
+	end
+end
+
+function hideNextLevelBtn(nick)
+	ui.removeTextArea(3, nick)
+end
 
 function configurePlayer(nick)
 	players[nick] = {
 		leftBlocks = 0,
-		infiniteBlocks = false
+		infiniteBlocks = false,
+		nextLevelVoted = false
 	}
 end
 
@@ -102,21 +148,30 @@ function startGame()
 	local newMap = maps[newMapID]
 	local isFlipped = math.random(0, 1) == 1
 
+	module.inLobby = false
+
 	tfm.exec.newGame(newMap, isFlipped)
 
 	for nick, player in pairs(players) do
 		player.infiniteBlocks = false
+		player.nextLevelVoted = false
+
+		hideNextLevelBtn(nick)
 	end
 
 	for nick in pairs(players) do
 		resetBlocks(nick)
 	end
+end
 
+function setGameTime()
 	tfm.exec.setGameTime(gameTime)
 	tfm.exec.setUIMapName("Czarodziejh <BL>- Mouseour <I>1.2.0</BL></I>")
 end
 
 function startLobby()
+	module.inLobby = true
+
 	tfm.exec.newGame(lobby_map, false)
 
 	for nick, player in pairs(players) do
@@ -183,6 +238,10 @@ function eventTextAreaCallback(id, nick, event)
 	elseif event == "statsOff" then
 		drawStatsButtonOn(nick)
 		hidePlayersStats(nick)
+	elseif event == "nextLevel" then
+		players[nick].nextLevelVoted = true
+		condShowNextLevelBtn(nick)
+		calcNextLevelVote()
 	end
 end
 
@@ -197,6 +256,31 @@ function eventChatCommand(nick, command)
 	if command == "startGame" then
 		startGame()
 	end
+end
+
+
+function eventLoop(_, timeLeft)
+	if not module.inLobby then
+		if timeLeft < 0 and timeLeft > -1000 then
+			module.nextLevelBtnVisible = true
+
+			for nick in pairs(players) do
+				condShowNextLevelBtn(nick)
+			end
+		end
+	end
+end
+
+
+function eventNewGame()
+	if not module.inLobby then
+		setGameTime()
+	end
+end
+
+
+function eventPlayerLeft(nick)
+	calcNextLevelVote()
 end
 
 -----------------------------
