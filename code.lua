@@ -210,6 +210,8 @@ function eventNewPlayer(nick)
 	drawLeftBlocks(nick)
 	drawStatsButtonOn(nick)
 	system.bindMouse(nick, true)
+
+	tfm.exec.respawnPlayer(nick)
 end
 
 for nick in pairs(tfm.get.room.playerList) do
