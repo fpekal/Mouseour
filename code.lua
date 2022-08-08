@@ -170,7 +170,6 @@ end
 
 function setGameTime()
 	tfm.exec.setGameTime(gameTime)
-	tfm.exec.setUIMapName("Czarodziejh <BL>- Mouseour <I>1.2.0</BL></I>")
 end
 
 function startLobby()
@@ -286,6 +285,8 @@ function eventNewGame()
 	if not module.inLobby then
 		setGameTime()
 	end
+
+	tfm.exec.setUIMapName("Czarodziejh <BL>- Mouseour <I>1.2.0</BL></I>")
 end
 
 
